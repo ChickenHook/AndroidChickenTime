@@ -5,7 +5,7 @@
       "sdkFolder": "/home/sascharoth/Android/Sdk",
       "isNativeCompilerSettingsCacheEnabled": false,
       "isBuildOnlyTargetAbiEnabled": true,
-      "ideBuildTargetAbi": "x86",
+      "ideBuildTargetAbi": "x86_64,x86",
       "splitsAbiFilterSet": [],
       "intermediatesFolder": "/home/sascharoth/Development/personal/AndroidChickenTime/chickenTime/build/intermediates",
       "gradleModulePathName": ":chickenTime",
@@ -42,6 +42,7 @@
     "gradleBuildOutputFolder": "/home/sascharoth/Development/personal/AndroidChickenTime/chickenTime/.cxx/cxx/debug",
     "isDebuggableEnabled": true,
     "validAbiList": [
+      "X86_64",
       "X86"
     ],
     "buildTargetSet": []
