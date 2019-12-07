@@ -190,7 +190,7 @@ CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 ChickenTime_BINARY_DIR:STATIC=/home/sascharoth/Development/personal/AndroidChickenTime/chickenTime/.cxx/cmake/debug/x86
 
 //Dependencies for the target
-ChickenTime_LIB_DEPENDS:STATIC=general;/home/sascharoth/Development/personal/AndroidChickenTime/artifacts/ChickenHook/i686-linux-android/lib/libChickenHook.a;general;log;
+ChickenTime_LIB_DEPENDS:STATIC=general;/home/sascharoth/Development/personal/AndroidChickenTime/artifacts/ChickenHook/i686-linux-android/lib/libChickenHook.a;general;log;general;dl;
 
 //Value Computed by CMake
 ChickenTime_SOURCE_DIR:STATIC=/home/sascharoth/Development/personal/AndroidChickenTime

@@ -8425,7 +8425,7 @@ Symbol table '.symtab' contains 7913 entries:
   5259: 00000000     0 FUNC    GLOBAL DEFAULT  UND _ZNK7android7RefBase9incStrongEPKv
   5260: 00000000     0 FUNC    GLOBAL DEFAULT  UND _ZN7android6Looper8removeFdEi
   5261: 00000000     0 FUNC    GLOBAL DEFAULT  UND _ZN7android7String8D1Ev
-  5262: 00000000     0 FUNC    GLOBAL DEFAULT  UND dlopen
+  5262: 00000000     0 FUNC    GLOBAL DEFAULT  UND sys_dlopen
   5263: 00000000     0 FUNC    GLOBAL DEFAULT  UND dlsym
   5264: 000afde0    95 FUNC    GLOBAL DEFAULT    7 _ZN7android39android_os_MessageQueue_getMessageQueueEP7_JNIEnvP8_jobject
   5265: 00000000     0 FUNC    GLOBAL DEFAULT  UND pipe

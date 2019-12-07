@@ -525,7 +525,7 @@ Symbol table '.dynsym' contains 3753 entries:
    521: 000779a0    47 FUNC    WEAK   DEFAULT    8 _ZN7android2spI13ANativeWindowEaSERKS2_
    522: 00000000     0 FUNC    GLOBAL DEFAULT  UND _ZNK7android7RefBase9incStrongEPKv
    523: 00000000     0 FUNC    GLOBAL DEFAULT  UND _ZN7android6Looper8removeFdEi
-   524: 00000000     0 FUNC    GLOBAL DEFAULT  UND dlopen
+   524: 00000000     0 FUNC    GLOBAL DEFAULT  UND sys_dlopen
    525: 00000000     0 FUNC    GLOBAL DEFAULT  UND dlsym
    526: 00000000     0 FUNC    GLOBAL DEFAULT  UND _ZN7android7String8C1Ev
    527: 000c8780    81 FUNC    GLOBAL DEFAULT    8 _ZN7android39android_os_MessageQueue_getMessageQueueEP7_JNIEnvP8_jobject

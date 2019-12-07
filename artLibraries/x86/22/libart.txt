@@ -19540,7 +19540,7 @@ Symbol table '.symtab' contains 15793 entries:
  13890: 002f4000  2284 FUNC    WEAK   PROTECTED    8 _ZN3art3JNI25GetPrimitiveArrayCriticalEP7_JNIEnvP7_jarrayPh
  13891: 002f48f0  2740 FUNC    WEAK   PROTECTED    8 _ZN3art13SharedLibrary17CheckOnLoadResultEv
  13892: 002f53b0  8535 FUNC    GLOBAL PROTECTED    8 _ZN3art9JavaVMExt17LoadNativeLibraryERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEENS_6HandleINS_6mirror11ClassLoaderEEEPS7_
- 13893: 00000000     0 FUNC    GLOBAL DEFAULT  UND dlopen
+ 13893: 00000000     0 FUNC    GLOBAL DEFAULT  UND sys_dlopen
  13894: 00389c60    15 FUNC    GLOBAL PROTECTED    8 _ZN3art6Thread22SetClassLoaderOverrideEPNS_6mirror11ClassLoaderE
  13895: 00514640    44 OBJECT  GLOBAL PROTECTED   20 _ZN3art13fault_managerE
  13896: 003c20f0   233 FUNC    GLOBAL PROTECTED    8 _ZN3art12FaultManager35EnsureArtActionInFrontOfSignalChainEv
