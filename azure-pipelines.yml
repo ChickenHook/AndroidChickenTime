@@ -36,6 +36,9 @@ jobs:
           $ANDROID_HOME/platform-tools/adb devices
 
           echo "Emulator started"
+      - task: Ant@1
+        inputs:
+          targets: "artifacts"
       - task: Gradle@2
         inputs:
           workingDirectory: ''
