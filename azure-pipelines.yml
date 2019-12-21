@@ -36,7 +36,6 @@ jobs:
           $ANDROID_HOME/platform-tools/adb devices
 
           echo "Emulator started"
-    steps:
       - script: |
           #!/usr/bin/env bash
           echo 'Installing apache ant...'
