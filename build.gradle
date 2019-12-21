@@ -26,3 +26,21 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+task install(type: Zip) {
+    from('.'){
+        include('*.md')
+        into('doc/AndroidChickenTime')
+    }
+    from('outputs/build/aar/'){
+        include('*.aar')
+        into('libs/AndroidChickenTime')
+    }
+    from('app'){
+        include '*'
+        include '**/*'
+        into('demoApp/')
+    }
+    archiveName 'AndroidChickenTime.zip'
+    destinationDir(file('artifactsOut/'))
+}
