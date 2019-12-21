@@ -5,8 +5,11 @@
 
     <target name="artifacts">
         <mkdir dir="artifacts"/>
-        <get src="https://dev.azure.com/sascharoth/67828063-71d7-422c-9358-edfaf94b911e/_apis/build/builds/101/artifacts?artifactName=ChickenHook&amp;api-version=5.1&amp;%24format=zip" dest="artifacts/ChickenHook.zip"/>
+        <get src="https://dev.azure.com/ChickenHook/ChickenHook/_apis/build/builds/101/artifacts?artifactName=ChickenHook&amp;api-version=5.1&amp;%24format=zip" dest="artifacts/ChickenHook.zip"/>
         <unzip src="artifacts/ChickenHook.zip" dest="artifacts/"/>
+
+        <get src="https://dev.azure.com/ChickenHook/ChickenHook/_apis/build/builds/99/artifacts?artifactName=BeaEngine&amp;api-version=5.1&amp;%24format=zip" dest="artifacts/BeaEngine.zip"/>
+        <unzip src="artifacts/BeaEngine.zip" dest="artifacts/"/>
     </target>
 
 

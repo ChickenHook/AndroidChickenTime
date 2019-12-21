@@ -23,15 +23,15 @@ class MainActivity : AppCompatActivity() {
         } ?: let {
             doIt();
         }
+        NativeInterface.installHooks()
 
         findViewById<Button>(R.id.activtiy_main_install_hooks)?.apply {
-            setOnClickListener{
-                NativeInterface.installHooks()
+            setOnClickListener {
             }
         }
         val text = findViewById<TextView>(R.id.activtiy_main_text);
         findViewById<Button>(R.id.activtiy_main_show_hook_callback)?.apply {
-            setOnClickListener{
+            setOnClickListener {
                 text?.setText("" + callbackFunctionList.size)
             }
         }
@@ -40,15 +40,53 @@ class MainActivity : AppCompatActivity() {
                 SystemClock.sleep(1000)
                 Log.d("MainActivity", "This background thread was triggered, yeah!")
                 doIt()
+                MainActivity::class.java.getMethod("doIt")?.invoke(this@MainActivity)
                 doIt2()
             }
-        }.start();
+        }.start()
 
         NativeInterface.setCallback { clazz, name ->
             // do something
             callbackFunctionList.add("$clazz.$name")
         }
 
+        NativeInterface.addHook(
+            MainActivity::class.java.getMethod("doIt"),
+            MainActivity::class.java.getMethod("myDoIt")
+        )
+
+        //java.lang.Thread.nativeCreate(java.lang.Thread, long, boolean)
+
+        /*NativeInterface.addHook(
+            System::class.java.getDeclaredMethod(
+                "arraycopy",
+                Object::class.java,
+                java.lang.Integer.TYPE,
+                Object::class.java,
+                java.lang.Integer.TYPE,
+                java.lang.Integer.TYPE
+            ),
+            MainActivity::class.java.getDeclaredMethod(
+                "onCreate",
+                Bundle::class.java
+            )
+        )
+
+        NativeInterface.addHook(
+            MainActivity::class.java.getDeclaredMethod(
+                "onCreate",
+                Bundle::class.java
+            ),
+            MainActivity::class.java.getDeclaredMethod(
+                "onCreate",
+                Bundle::class.java
+            )
+        )*/
+
+    }
+
+    fun myDoIt() {
+        Log.d("MainActivity", "Yeah I was HACKED !!!!!!!!!!!!!!!!!!!!")
     }
 
     fun doIt() {
@@ -61,6 +99,5 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
     }
 }

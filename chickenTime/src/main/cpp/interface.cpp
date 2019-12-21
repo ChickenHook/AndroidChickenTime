@@ -26,8 +26,39 @@ std::string getArtPath(JNIEnv *env) {
 
 // _ZNK3art6Thread13DecodeJObjectEP8_jobject
 
-static void addHook(JNIEnv *env, jobject /*this*/, jobject hookMethod, jobject callbackMethod) {
+static std::vector<std::string> hooks;
 
+static void addHook(JNIEnv *env, jobject /*this*/, jstring hookMethod, jstring callbackMethod) {
+    jboolean isCopy;
+    const char *convertedValue = (env)->GetStringUTFChars(hookMethod, &isCopy);
+    std::string hookMethodString = std::string(convertedValue);
+    hookMethodString.erase(
+            std::remove_if(hookMethodString.begin(), hookMethodString.end(), ::isspace),
+            hookMethodString.end());
+    hooks.push_back(hookMethodString);
+    env->ReleaseStringUTFChars(hookMethod, convertedValue);
+}
+
+static void propagateToJava(void *method, std::string name) {
+    __android_log_print(ANDROID_LOG_DEBUG, "invokeCallback",
+                        "trigger java 1 %p", method);
+    JNIEnv *env = nullptr;
+    if (_vm->GetEnv((void **) (&env), JNI_VERSION_1_4) != JNI_OK) {
+        return;
+    }
+    if (callbackClass == nullptr) {
+
+        return;
+    }
+    if (callbackMethod == nullptr) {
+
+        return;
+    }
+    __android_log_print(ANDROID_LOG_DEBUG, "invokeCallback",
+                        "trigger java 2 %p", method);
+    //callbackMethod = env->GetStaticMethodID(callbackClass, "onJavaHook", "(Ljava/lang/String;)V");
+    jstring functionName = env->NewStringUTF(name.c_str());
+    env->CallStaticVoidMethod(callbackClass, callbackMethod, functionName);
 
 }
 
@@ -41,47 +72,21 @@ static void installHooks(
 
 
     void *libart = DlOpenBypass::sys_dlopen(env, getArtPath(env).c_str());
-    ArtMethodInvokeHook::setCallback([](void *method) {
+    ArtMethodInvokeHook::getInstance().setCallback([](void *method, std::string name) {
         if (_vm == nullptr) {
             return;
         }
-        JNIEnv *env = nullptr;
-        if (_vm->GetEnv((void **) (&env), JNI_VERSION_1_4) != JNI_OK) {
-            return;
+        name.erase(
+                std::remove_if(name.begin(), name.end(), ::isspace),
+                name.end());
+        for (auto hook : hooks) {
+            if (hook.find(name) != std::string::npos) {
+                propagateToJava(method, name);
+            }
         }
-        if (callbackClass == nullptr) {
 
-            return;
-        }
-        if (callbackMethod == nullptr) {
-            return;
-        }
-        __android_log_print(ANDROID_LOG_DEBUG, "invokeCallback",
-                            "trigger java %p", method);
-// First get the class object
-        callbackMethod = env->GetStaticMethodID(callbackClass, "onJavaHook", "()V");
-        env->CallStaticVoidMethod(callbackClass, callbackMethod);
-/*
-// Now get the class object's class descriptor
-        cls = env->GetObjectClass(clsObj);
-
-// Find the getName() method on the class object
-        mid = env->GetMethodID(cls, "getName", "()Ljava/lang/String;");
-
-// Call the getName() to get a jstring object back
-        jstring strObj = (jstring) env->CallObjectMethod(clsObj, mid);
-
-// Now get the c string from the java jstring object
-        const char *str = env->GetStringUTFChars(strObj, nullptr);
-
-// Print the class name
-        __android_log_print(ANDROID_LOG_DEBUG,
-                            "printClassName", "Calling class is: %s", str);
-
-// Release the memory pinned char array
-        env->ReleaseStringUTFChars(strObj, str);*/
     });
-    ArtMethodInvokeHook::installArtHooks(_vm, libart);
+    ArtMethodInvokeHook::getInstance().installArtHooks(_vm, libart);
     /*DlOpenBypass::sys_dlopen(env, "art", true, "org/chickenhook/chickenTime/NativeInterface",
                              "dlopenHelper", [](const char *__filename, int __flag) {
 
@@ -149,8 +154,8 @@ static const char *classPathName = "org/chickenhook/chickenTime/NativeInterface"
 
 
 static const JNINativeMethod gMethods[] = {
-        {"installHooks", "()V",                                                     (void *) installHooks},
-        {"addHook",      "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)V", (void *) addHook}
+        {"installHooks", "()V",                                     (void *) installHooks},
+        {"addHook",      "(Ljava/lang/String;Ljava/lang/String;)V", (void *) addHook}
 };
 
 void getGlobalRef(JNIEnv *jenv, const char *clazz, jclass *globalClass) {
@@ -169,7 +174,7 @@ static int registerNativeMethods(JNIEnv *env, const char *className,
                             "Native registration unable to find class '%s'", className);
         return JNI_FALSE;
     }
-    callbackMethod = env->GetStaticMethodID(callbackClass, "onJavaHook", "()V");
+    callbackMethod = env->GetStaticMethodID(callbackClass, "onJavaHook", "(Ljava/lang/String;)V");
     if (callbackMethod == nullptr) {
         __android_log_print(ANDROID_LOG_DEBUG, "registerNativeMethods",
                             "Native registration unable to find callback method '%s'",

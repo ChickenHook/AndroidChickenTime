@@ -11,12 +11,26 @@
 #include "ArtMethodInvokeHook.h"
 
 
+
+/////////////// convert
+
+static inline jmethodID EncodeArtMethod(void *art_method) {
+    return reinterpret_cast<jmethodID>(art_method);
+}
+
+static inline void *DecodeArtMethod(jmethodID method_id) {
+    return reinterpret_cast<void *>(method_id);
+}
+
+
+
+/////////////// convert
+
 void *artMethodInvoke = nullptr; // 19 const char *shorty
-void *artMethodGetName = nullptr;
-void *artMethodToUtf8String = nullptr;
 extern JavaVM *_vm;
 
-void (*ArtMethodInvokeHook::_callback)(void *) = (void (*)(void *)) nullptr;
+void (*ArtMethodInvokeHook::_callback)(void *, std::string name) = (void (*)(void *,
+                                                                             std::string name)) nullptr;
 
 void ArtMethodInvokeHook::installArtHooks(JavaVM *vm, void *libart) {
     if (libart == nullptr) {
@@ -25,21 +39,12 @@ void ArtMethodInvokeHook::installArtHooks(JavaVM *vm, void *libart) {
         return;
     }
     _vm = vm;
+
+    // art method invoke
     artMethodInvoke = dlsym(libart,
                             "_ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc");
 
     if (artMethodInvoke) {
-
-        artMethodGetName = dlsym(libart, "_ZN3art9ArtMethod15GetNameAsStringEPNS_6ThreadE");
-        if (artMethodGetName == nullptr) {
-            __android_log_print(ANDROID_LOG_DEBUG, "installHooks",
-                                "!! Warning !! could not retrieve getNameAsString");
-        }
-        artMethodToUtf8String = dlsym(libart, "_ZN3art6mirror6String14ToModifiedUtf8Ev");
-        if (artMethodToUtf8String == nullptr) {
-            __android_log_print(ANDROID_LOG_DEBUG, "installHooks",
-                                "!! Warning !! could not retrieve ToModifiedUtf8");
-        }
         __android_log_print(ANDROID_LOG_DEBUG, "installHooks",
                             "Install hook: _ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc");
         ChickenHook::Hooking::getInstance().hook(artMethodInvoke,
@@ -67,9 +72,11 @@ void ArtMethodInvokeHook::installArtHooks(JavaVM *vm, void *libart) {
 
         }
     }
+    bool prettyHooksResult = artMethodPrettyName.installHooks(vm, libart);
+
     __android_log_print(ANDROID_LOG_DEBUG, "installHooks",
-                        "artMethodInvoke <%p> artMethodGetName <%p>", artMethodInvoke,
-                        artMethodGetName);
+                        "artMethodInvoke <%p> artMethodGetName <%d>", artMethodInvoke,
+                        prettyHooksResult);
 }
 
 
@@ -285,26 +292,50 @@ ArtMethodInvokeHook::myArtMethodInvoke22(void *method, void *self, void *args, u
             (void *) artMethodInvoke,
             trampoline)) {
         __android_log_print(ANDROID_LOG_DEBUG,
-                            "myArtMethodInvoke",
+                            "myArtMethodInvoke22",
                             "hooked function call original function");
-        trampoline.copyOriginal();
+        auto callAddr = (void (*)(void *method, void *self, void *args, uint32_t args_size,
+                                  void *result,
+                                  char const *shorty)) trampoline.getRealCallAddr();
+        if (callAddr == nullptr) {
+            callAddr = (void (*)(void *method, void *self, void *args, uint32_t args_size,
+                                 void *result,
+                                 char const *shorty)) artMethodInvoke;
+            trampoline.copyOriginal();
+        }
+
+
         __android_log_print(ANDROID_LOG_DEBUG,
                             "myArtMethodInvoke22",
                             "call the function! %p", artMethodInvoke);
-        ((void (*)(void *method, void *self, void *args, uint32_t args_size, void *result,
-                   const char *shorty)) artMethodInvoke)(method,
-                                                         self,
-                                                         args,
-                                                         args_size,
-                                                         result,
-                                                         shorty);
+        callAddr(method,
+                 self,
+                 args,
+                 args_size,
+                 result,
+                 shorty);
+        __android_log_print(ANDROID_LOG_DEBUG,
+                            "myArtMethodInvoke22",
+                            "  got result [-] %p-%p-%p-%d-%p-%p", method, self, args, args_size,
+                            result,
+                            shorty);
+        if (getInstance().getArtMethodPrettyNameHook().availible()) {
+            std::string methodName = getInstance().getArtMethodPrettyNameHook().getMethodName(
+                    method);
+            log() << "artMethodRuntimeMethodName Name(" << methodName << ")";
+            if (_callback) {
+                _callback(method, methodName);
+            }
+        }
         __android_log_print(ANDROID_LOG_DEBUG,
                             "myArtMethodInvoke22",
                             "call the function done!");
-        if (!trampoline.reinstall()) {
-            __android_log_print(ANDROID_LOG_DEBUG,
-                                "myArtMethodInvoke22",
-                                "ERROR while reinstall hook");
+        if (callAddr == nullptr) {
+            if (!trampoline.reinstall()) {
+                __android_log_print(ANDROID_LOG_DEBUG,
+                                    "myArtMethodInvoke22",
+                                    "ERROR while reinstall hook");
+            }
         }
     } else {
         __android_log_print(ANDROID_LOG_DEBUG,
@@ -329,53 +360,52 @@ ArtMethodInvokeHook::myArtMethodInvoke27(void *method, void *self, char *args, u
             (void *) artMethodInvoke,
             trampoline)) {
         __android_log_print(ANDROID_LOG_DEBUG,
-                            "myArtMethodInvoke",
+                            "myArtMethodInvoke27",
                             "hooked function call original function");
-        trampoline.copyOriginal();
-        if (_callback) {
-            _callback(method);
+        auto callAddr = (void (*)(void *method, void *self, void *args, uint32_t args_size,
+                                  void *result,
+                                  char const *shorty)) trampoline.getRealCallAddr();
+        if (callAddr == nullptr) {
+            callAddr = (void (*)(void *method, void *self, void *args, uint32_t args_size,
+                                 void *result,
+                                 char const *shorty)) artMethodInvoke;
+            trampoline.copyOriginal();
         }
+
         __android_log_print(ANDROID_LOG_DEBUG,
                             "myArtMethodInvoke27",
                             "call the function! %p", artMethodInvoke);
-        ((void (*)(void *method, void *self, void *args, uint32_t args_size, void *result,
-                   char const *shorty)) artMethodInvoke)(method,
-                                                         self,
-                                                         args,
-                                                         args_size,
-                                                         result,
-                                                         shorty);
+        callAddr(method,
+                 self,
+                 args,
+                 args_size,
+                 result,
+                 shorty);
         __android_log_print(ANDROID_LOG_DEBUG,
                             "myArtMethodInvoke27",
                             "  got result [-] %p-%p-%p-%d-%p-%p", method, self, args, args_size,
                             result,
                             shorty);
-        if (artMethodGetName) {
-            //void *String = ((void *(*)(void *, void *)) artMethodGetName)(method, self);
+        if (getInstance().getArtMethodPrettyNameHook().availible()) {
+            std::string methodName = getInstance().getArtMethodPrettyNameHook().getMethodName(
+                    method);
+            log() << "artMethodRuntimeMethodName Name(" << methodName << ")";
 
-            /*if (artMethodToUtf8String) {
-                std::string name = ((std::string (*)(void *)) artMethodToUtf8String)(method);
-                //std::string hex = hexdump(reinterpret_cast<const uint8_t *>(name.c_str()), name.length(),"myArtMethodInvoke27");
-                log() << "myArtMethodInvoke27 Name(" << name.length() << ") <" << name << ">";
-                //log() << "myArtMethodInvoke27 Hex" << hex;
-
-
-            } else {
-                __android_log_print(ANDROID_LOG_DEBUG,
-                                    "myArtMethodInvoke27",
-                                    "Name! %p", String);
-            }*/
-            //printClassName((jobject) String);
-
+            if (_callback) {
+                _callback(method, methodName);
+            }
         }
         __android_log_print(ANDROID_LOG_DEBUG,
                             "myArtMethodInvoke27",
                             "call the function done!");
-        if (!trampoline.reinstall()) {
-            __android_log_print(ANDROID_LOG_DEBUG,
-                                "myArtMethodInvoke27",
-                                "ERROR while reinstall hook");
+        if (callAddr == nullptr) {
+            if (!trampoline.reinstall()) {
+                __android_log_print(ANDROID_LOG_DEBUG,
+                                    "myArtMethodInvoke27",
+                                    "ERROR while reinstall hook");
+            }
         }
+
     } else {
         __android_log_print(ANDROID_LOG_DEBUG,
                             "myArtMethodInvoke27",
@@ -383,6 +413,18 @@ ArtMethodInvokeHook::myArtMethodInvoke27(void *method, void *self, char *args, u
     }
 }
 
-void ArtMethodInvokeHook::setCallback(void (callback)(void *)) {
+void ArtMethodInvokeHook::setCallback(void (callback)(void *, std::string)) {
     _callback = callback;
+}
+
+ArtMethodInvokeHook &ArtMethodInvokeHook::getInstance() {
+    {
+        static ArtMethodInvokeHook instance; // Guaranteed to be destroyed.
+        // Instantiated on first use.
+        return instance;
+    }
+}
+
+ArtMethodPrettyNameHook ArtMethodInvokeHook::getArtMethodPrettyNameHook() {
+    return artMethodPrettyName;
 }

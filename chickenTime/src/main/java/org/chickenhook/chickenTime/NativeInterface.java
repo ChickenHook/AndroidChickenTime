@@ -17,15 +17,11 @@ public class NativeInterface {
         callback = onArtMethodInvoked;
     }
 
-    private static void onJavaHook() {
-        int index = 3;
-        if (Thread.currentThread().getStackTrace().length < 4) {
-            return;
-        }
-        StackTraceElement element = Thread.currentThread().getStackTrace()[index];
-        Log.d("NativeInterface", "onJavaHook [-] callback triggered <" + element.getClassName() + "." + element.getMethodName() + ">");
+    private static void onJavaHook(String method) {
+
+        Log.d("NativeInterface", "onJavaHook [-] callback triggered <" + method + ">");
         if (callback != null) {
-            callback.onArtMethodInvoked(element.getClassName(), element.getMethodName());
+            callback.onArtMethodInvoked(method, method);
         }
         //String stackTrace = Log.getStackTraceString(new RuntimeException());
         //Log.d("NativeInterface", "onJavaHook [-] stackTrace " + stackTrace);
@@ -34,7 +30,13 @@ public class NativeInterface {
 
     public static native void installHooks();
 
-    public static native void addHook(Method hook, Method callback);
+    public static void addHook(Method hook, Method callback) {
+        Log.d("NativeInterface", "addHook [-] triggered <" + hook.toGenericString() + "." + callback.toGenericString() + ">");
+        addHook(hook.toGenericString(), callback.toGenericString());
+
+    }
+
+    public static native void addHook(String hook, String callback);
 
     public interface OnArtMethodInvoked {
         void onArtMethodInvoked(String clazz, String name);
