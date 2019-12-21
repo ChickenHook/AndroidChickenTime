@@ -8,7 +8,7 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
     defaultConfig {
-        applicationId "org.chickenhook.AndroidHackingTemplate"
+        applicationId "org.chickenhook.ChickenTimeTestApp"
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 1
