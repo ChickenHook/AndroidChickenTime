@@ -54,6 +54,9 @@ jobs:
           publishJUnitResults: true
           testResultsFiles: '**/TEST-*.xml'
           tasks: 'connectedAndroidTest'
+      - task: Ant@1
+        inputs:
+          targets: "install"
       - task: PublishBuildArtifacts@1
         inputs:
           pathtoPublish: 'artifactsOut'
