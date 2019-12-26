@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("org.chickenhook.myandroidhackinglibrary.test", appContext.packageName)
+        assertEquals("org.chickenhook.chickentime.test", appContext.packageName)
     }
 }
